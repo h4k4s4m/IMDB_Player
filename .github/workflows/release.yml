@@ -1,0 +1,37 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on version tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create ZIP file
+        run: |
+          zip -r imdb-watch-extension.zip * \
+          -x "*.git*" \
+          -x ".github/*" \
+          -x "*.md" \
+          -x "LICENSE" \
+          -x "devmode.png"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: imdb-watch-extension.zip
+          name: Release ${{ github.ref_name }}
+          body: |
+            IMDB Watch Button Extension ${{ github.ref_name }}
+            
+            Adds a "Watch Now" button to IMDB pages for instant streaming of movies and TV shows.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
