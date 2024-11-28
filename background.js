@@ -1,0 +1,1 @@
+// Background script can remain empty for this functionality 

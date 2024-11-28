@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Watch Episode</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://www.omdbapi.com https://api.themoviedb.org https://vidsrc.me https://vidsrc.net https://theajack.github.io; connect-src 'self' https://www.omdbapi.com https://api.themoviedb.org; frame-src https://vidsrc.me https://vidsrc.net https://theajack.github.io; img-src * 'self' data: https: https://image.tmdb.org; style-src 'unsafe-inline' 'self'; script-src 'self';">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .video-container {
+            flex: 1;
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .episode-list {
+            width: 300px;
+            overflow-y: auto;
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .episode-card {
+            cursor: pointer;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #3d3d3d;
+            transition: background-color 0.2s;
+        }
+        .episode-card:hover {
+            background-color: #4d4d4d;
+        }
+        .episode-card.active {
+            background-color: #f5c518;
+            color: black;
+        }
+        .episode-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .episode-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .episode-info {
+            font-size: 0.9em;
+            color: #999;
+        }
+        .season-selector {
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 8px;
+            background-color: #3d3d3d;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #f5c518;
+        }
+        .error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div class="container" style="display: none;">
+        <div class="video-container">
+            <iframe id="video-frame" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
+        </div>
+        <div class="episode-list">
+            <div class="season-selector">
+                <select id="season-select"></select>
+            </div>
+            <div id="episodes-container"></div>
+        </div>
+    </div>
+    <script src="viewer.js"></script>
+</body>
+</html> 

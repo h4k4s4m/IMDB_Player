@@ -1,0 +1,61 @@
+{
+    "manifest_version": 3,
+    "name": "IMDB Watch Button",
+    "version": "1.0",
+    "description": "Adds a watch button to IMDB pages",
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "storage"
+    ],
+    "host_permissions": [
+        "http://www.omdbapi.com/*",
+        "https://www.omdbapi.com/*",
+        "https://api.themoviedb.org/*",
+        "https://image.tmdb.org/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.imdb.com/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "19": "icon19.png",
+            "38": "icon38.png",
+            "32": "icon32.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
+    "icons": {
+        "16": "icon16.png",
+        "19": "icon19.png",
+        "32": "icon32.png",
+        "38": "icon38.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "viewer.html",
+                "viewer.js",
+                "placeholder.png"
+            ],
+            "matches": [
+                "*://*.imdb.com/*"
+            ]
+        }
+    ]
+}
