@@ -1,9 +1,17 @@
 name: Create Release
 
 on:
-  push:
-    tags:
-      - 'v*' # Triggers on version tags
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (major, minor, patch)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
   build:
@@ -11,6 +19,37 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=${latest_tag}" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: version
+        run: |
+          latest_version=${latest_tag#v}
+          IFS='.' read -r major minor patch <<< "$latest_version"
+          case "${{ github.event.inputs.release_type }}" in
+            major)
+              new_version="$((major + 1)).0.0"
+              ;;
+            minor)
+              new_version="${major}.$((minor + 1)).0"
+              ;;
+            patch)
+              new_version="${major}.${minor}.$((patch + 1))"
+              ;;
+          esac
+          echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+          echo "new_tag=v${new_version}" >> $GITHUB_OUTPUT
+
+      - name: Update manifest version
+        run: |
+          sed -i 's/"version": "[^"]*"/"version": "${{ steps.version.outputs.new_version }}"/' manifest.json
 
       - name: Create ZIP file
         run: |
@@ -25,13 +64,22 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.version.outputs.new_tag }}
           files: imdb-watch-extension.zip
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.new_tag }}
           body: |
-            IMDB Watch Button Extension ${{ github.ref_name }}
+            IMDB Watch Button Extension ${{ steps.version.outputs.new_tag }}
             
             Adds a "Watch Now" button to IMDB pages for instant streaming of movies and TV shows.
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit manifest changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add manifest.json
+          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
+          git push
