@@ -83,13 +83,32 @@
             color: #f5c518;
             border-bottom-color: #f5c518;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .settings-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+        .tabs {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
     <h3>IMDB Watch Button</h3>
-    <div class="tabs">
-        <button class="tab active" data-tab="history">Recent</button>
-        <button class="tab" data-tab="favorites">Favorites</button>
+    <div class="header">
+        <div class="tabs">
+            <button class="tab active" data-tab="history">Recent</button>
+            <button class="tab" data-tab="favorites">Favorites</button>
+        </div>
+        <button id="settings-btn" class="settings-btn">⚙️</button>
     </div>
     <div id="history" class="section">
         <div id="history-list"></div>

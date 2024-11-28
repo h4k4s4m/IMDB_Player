@@ -1,12 +1,20 @@
-const TMDB_AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyNTQ1ODA0YjExNDNmODFlYjdkMmNiNjIwOTc5MjYyOSIsIm5iZiI6MTczMjc4Mjk4Mi42ODI4NzYzLCJzdWIiOiI2NzQ4MmIyMzM3OWIwM2E5ZjFkMDVjYjMiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.mAN06ILssZW0tTW98wUvlmzFBEKFXPdmVzXoi0-GbLs';
+let tmdbOptions = null;
 let isInitialized = false;
+let tokenCheckInterval = null;
 
-const tmdbOptions = {
-    headers: {
-        'Authorization': `Bearer ${TMDB_AUTH_TOKEN}`,
-        'Content-Type': 'application/json'
+async function initializeTmdbOptions() {
+    const result = await chrome.storage.local.get(['tmdbToken']);
+    if (!result.tmdbToken) {
+        throw new Error('TMDB token not configured');
     }
-};
+    
+    tmdbOptions = {
+        headers: {
+            'Authorization': `Bearer ${result.tmdbToken}`,
+            'Content-Type': 'application/json'
+        }
+    };
+}
 
 console.log('Viewer.js loaded');
 
@@ -72,8 +80,11 @@ function createEpisodeCard(episode, season, imdbId, episodeImage) {
         document.querySelectorAll('.episode-card').forEach(c => c.classList.remove('active'));
         card.classList.add('active');
         const videoFrame = document.getElementById('video-frame');
-        const episodeUrl = `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${season}&episode=${episode.Episode}`;
-        videoFrame.src = episodeUrl;
+        const episodeUrl = new URL('https://vidsrc.me/embed/tv');
+        episodeUrl.searchParams.append('imdb', imdbId);
+        episodeUrl.searchParams.append('season', season);
+        episodeUrl.searchParams.append('episode', episode.Episode);
+        videoFrame.src = episodeUrl.toString();
 
         // Save last played episode info
         chrome.storage.local.get(['watchHistory'], async function(result) {
@@ -185,17 +196,23 @@ async function loadSeason(imdbId, season, tmdbId) {
 async function initialize() {
     if (isInitialized) return;
     
+    // Get all DOM elements first
+    const loadingText = document.getElementById('loading-text');
     const loading = document.getElementById('loading');
     const error = document.getElementById('error');
     const container = document.querySelector('.container');
     
     try {
+        await initializeTmdbOptions();
+        
+        loadingText.textContent = 'Loading...';
+        
         const params = new URLSearchParams(window.location.search);
         const imdbId = params.get('imdb');
         
         // Get show info and TMDB ID
         const showInfo = await fetchShowInfo(imdbId);
-        if (!showInfo || showInfo.Error) throw new Error(showInfo.Error || 'Failed to load show information');
+        if (!showInfo || !showInfo.tmdbId) throw new Error('Failed to load show information');
         
         const tmdbId = showInfo.tmdbId;
         console.log('TMDB ID:', tmdbId);
@@ -241,7 +258,27 @@ async function initialize() {
         error.textContent = err.message;
         error.style.display = 'block';
         container.style.display = 'none';
+        
+        if (err.message === 'TMDB token not configured') {
+            error.textContent = 'TMDB token not configured. Opening configuration page...';
+            chrome.runtime.openOptionsPage();
+            startTokenCheck();
+        }
     }
+}
+
+function startTokenCheck() {
+    if (tokenCheckInterval) {
+        clearInterval(tokenCheckInterval);
+    }
+    
+    tokenCheckInterval = setInterval(async () => {
+        const result = await chrome.storage.local.get(['tmdbToken']);
+        if (result.tmdbToken) {
+            clearInterval(tokenCheckInterval);
+            window.location.reload();
+        }
+    }, 1000); // Check every second
 }
 
 // Initialize when DOM is ready

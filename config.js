@@ -44,7 +44,7 @@ async function saveConfig() {
     // Close the configuration page after a brief delay
     setTimeout(() => {
         window.close();
-    }, 1500); // 1.5 second delay to show success message
+    }, 1500);
 }
 
 async function loadConfig() {

@@ -124,4 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(tabName).style.display = 'block';
         });
     });
+
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+    });
 }); 

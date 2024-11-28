@@ -85,6 +85,11 @@
             transform: translate(-50%, -50%);
             font-size: 18px;
             color: #f5c518;
+            text-align: center;
+        }
+        .loading span {
+            display: block;
+            margin-bottom: 10px;
         }
         .error {
             position: fixed;
@@ -98,7 +103,9 @@
     </style>
 </head>
 <body>
-    <div id="loading" class="loading">Loading...</div>
+    <div id="loading" class="loading">
+        <span id="loading-text">Loading...</span>
+    </div>
     <div id="error" class="error" style="display: none;"></div>
     <div class="container" style="display: none;">
         <div class="video-container">
