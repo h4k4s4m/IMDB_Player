@@ -111,6 +111,18 @@ function updateLists() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Set the Favorites tab as the default active tab
+    const favoritesTab = document.querySelector('.tab[data-tab="favorites"]');
+    const historyTab = document.querySelector('.tab[data-tab="history"]');
+    const favoritesSection = document.getElementById('favorites');
+    const historySection = document.getElementById('history');
+
+    // Activate the Favorites tab and show the Favorites section
+    favoritesTab.classList.add('active');
+    favoritesSection.style.display = 'block';
+    historyTab.classList.remove('active');
+    historySection.style.display = 'none';
+
     updateLists();
     
     // Tab switching

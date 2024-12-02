@@ -34,8 +34,7 @@ async function saveConfig() {
     }
 
     await chrome.storage.local.set({ 
-        tmdbToken: token,
-        theme: document.getElementById('theme-switch').checked ? 'dark' : 'light'
+        tmdbToken: token
     });
 
     success.textContent = 'Settings saved successfully!';
@@ -48,22 +47,13 @@ async function saveConfig() {
 }
 
 async function loadConfig() {
-    const result = await chrome.storage.local.get(['tmdbToken', 'theme']);
+    const result = await chrome.storage.local.get(['tmdbToken']);
     if (result.tmdbToken) {
         document.getElementById('tmdb-token').value = result.tmdbToken;
     }
-    document.getElementById('theme-switch').checked = result.theme === 'dark';
-    updateTheme(result.theme === 'dark');
-}
-
-function updateTheme(isDark) {
-    document.body.classList.toggle('dark', isDark);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     loadConfig();
     document.getElementById('save-token').addEventListener('click', saveConfig);
-    document.getElementById('theme-switch').addEventListener('change', (e) => {
-        updateTheme(e.target.checked);
-    });
 }); 
