@@ -1,6 +1,7 @@
 # IMDB Watch Button Extension
 
 A Chrome extension that enhances IMDB with a "Watch Now" button for instant streaming of movies and TV shows.
+It's a simple and lightweight tool that integrates with The Movie Database (TMDB) API to provide a seamless viewing experience.
 
 ## Features
 
