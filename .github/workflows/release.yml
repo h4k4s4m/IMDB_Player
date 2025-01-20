@@ -32,20 +32,30 @@ jobs:
           echo "Available tags:"
           git tag
           
-          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          # Get all tags sorted by version number
+          all_tags=$(git tag --sort=-v:refname)
+          echo "All tags sorted:"
+          echo "$all_tags"
+          
+          # Get latest tag that matches vX.Y.Z format
+          latest_tag=$(echo "$all_tags" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1)
+          
           if [ -z "$latest_tag" ]; then
-            echo "No tags found, defaulting to v0.0.0"
+            echo "No valid semver tags found (vX.Y.Z format), defaulting to v0.0.0"
             latest_tag="v0.0.0"
           else
-            echo "Found latest tag: ${latest_tag}"
+            echo "Found latest valid tag: ${latest_tag}"
           fi
+          
+          # Export for next step
           echo "latest_tag=${latest_tag}" >> $GITHUB_OUTPUT
 
       - name: Calculate new version
         id: version
         run: |
+          latest_tag="${{ steps.get_latest_tag.outputs.latest_tag }}"
           latest_version=${latest_tag#v}
-          echo "Processing version: $latest_version"
+          echo "Processing version from tag: $latest_tag -> $latest_version"
           
           # Split version and ensure all components exist
           IFS='.' read -r major minor patch <<< "$latest_version"
@@ -58,7 +68,11 @@ jobs:
           echo "Minor: $minor"
           echo "Patch: $patch"
           
-          case "${{ github.event.inputs.release_type }}" in
+          # Store release type in variable for easier use and validation
+          release_type="${{ github.event.inputs.release_type }}"
+          echo "Release type: $release_type"
+          
+          case "$release_type" in
             major)
               new_version="$((major + 1)).0.0"
               ;;
@@ -68,9 +82,13 @@ jobs:
             patch)
               new_version="${major}.${minor}.$((patch + 1))"
               ;;
+            *)
+              echo "Error: Invalid release type '$release_type'"
+              exit 1
+              ;;
           esac
           
-          echo "Calculated new version: $new_version"
+          echo "Calculated new version: $new_version from $major.$minor.$patch ($release_type)"
           
           # Ensure all parts are present in the version
           if [[ ! $new_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
