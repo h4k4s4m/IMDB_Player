@@ -28,7 +28,17 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: |
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # List all tags for debugging
+          echo "Available tags:"
+          git tag
+          
+          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          if [ -z "$latest_tag" ]; then
+            echo "No tags found, defaulting to v0.0.0"
+            latest_tag="v0.0.0"
+          else
+            echo "Found latest tag: ${latest_tag}"
+          fi
           echo "latest_tag=${latest_tag}" >> $GITHUB_OUTPUT
 
       - name: Calculate new version
