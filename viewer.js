@@ -15,7 +15,7 @@ async function initializeTmdbOptions() {
         }
     };
 }
-
+  
 console.log('Viewer.js loaded');
 
 async function fetchShowInfo(imdbId) {
