@@ -9,8 +9,8 @@ function addWatchButton() {
     const imdbId = window.location.pathname.split('/')[2];
     
     // Check if it's a TV show
-    const isTvShow = Array.from(document.getElementsByTagName('span'))
-        .some(span => span.textContent === 'Episodes');
+    const isTvShow = Array.from(document.querySelectorAll('li.ipc-inline-list__item'))
+        .some(li => li.textContent === 'TV Series');
 
     // Create container
     const container = document.createElement('div');
