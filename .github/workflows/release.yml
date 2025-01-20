@@ -45,11 +45,18 @@ jobs:
         id: version
         run: |
           latest_version=${latest_tag#v}
+          echo "Processing version: $latest_version"
+          
           # Split version and ensure all components exist
           IFS='.' read -r major minor patch <<< "$latest_version"
           major=${major:-0}
           minor=${minor:-0}
           patch=${patch:-0}
+          
+          echo "Parsed version components:"
+          echo "Major: $major"
+          echo "Minor: $minor"
+          echo "Patch: $patch"
           
           case "${{ github.event.inputs.release_type }}" in
             major)
@@ -63,6 +70,8 @@ jobs:
               ;;
           esac
           
+          echo "Calculated new version: $new_version"
+          
           # Ensure all parts are present in the version
           if [[ ! $new_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             new_version="0.0.0"
@@ -72,7 +81,18 @@ jobs:
 
       - name: Update manifest version
         run: |
-          sed -i 's/"version": "[^"]*"/"version": "${{ steps.version.outputs.new_version }}"/' manifest.json
+          echo "Updating manifest.json version to ${{ steps.version.outputs.new_version }}"
+          # Use sed with different syntax for macOS/Linux compatibility
+          sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"${{ steps.version.outputs.new_version }}\"/" manifest.json
+          rm -f manifest.json.bak
+          # Verify the change
+          if grep -q "\"version\": \"${{ steps.version.outputs.new_version }}\"" manifest.json; then
+            echo "Successfully updated version in manifest.json"
+            cat manifest.json
+          else
+            echo "Failed to update version in manifest.json"
+            exit 1
+          fi
 
       - name: Create ZIP file
         run: |
@@ -82,6 +102,19 @@ jobs:
           -x "*.md" \
           -x "LICENSE" \
           -x "devmode.png"
+
+      - name: Commit manifest changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          # Check if manifest.json has changes
+          if git diff --quiet manifest.json; then
+            echo "No changes to manifest.json"
+          else
+            git add manifest.json
+            git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
+            git push
+          fi
 
       - name: Create Release
         id: create_release
@@ -98,11 +131,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Commit manifest changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add manifest.json
-          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
-          git push
