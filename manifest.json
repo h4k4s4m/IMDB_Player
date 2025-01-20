@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "IMDB Watch Button",
-    "version": ".1.0",
+    "version": "1.0.0",
     "description": "Adds a watch button to IMDB pages",
     "permissions": [
         "activeTab",
